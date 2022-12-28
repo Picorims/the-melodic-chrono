@@ -4,6 +4,9 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Handler;
+import android.util.Log;
+
+import java.util.HashMap;
 
 /**
  * Class that generates sinusoides.
@@ -12,6 +15,39 @@ import android.os.Handler;
  * - https://stackoverflow.com/a/23399026
  */
 public class SoundGenerator {
+    public static final String TAG = "MelodicChrono::SoundGenerator";
+    private static final HashMap<String, Integer> NOTES = new HashMap<>();
+
+    static {
+        NOTES.put("C", 0);
+        NOTES.put("D", 2);
+        NOTES.put("E", 4);
+        NOTES.put("F", 5);
+        NOTES.put("G", 7);
+        NOTES.put("A", 9);
+        NOTES.put("B", 11);
+    }
+
+    public static void playNote(String note, double duration) {
+        //find index of the note relative to A4 = 0
+        int C4 = -9;
+        int noteIndex = C4;
+        String baseNote = note.substring(0,1);
+        String modifier = (note.length() == 2)? note.substring(1,2) : "";
+        if (modifier == "#") noteIndex++;
+        if (modifier == "b") noteIndex--;
+        noteIndex += NOTES.get(note);
+
+        // *2 = +1 octave so 12, 24, 36... are octaves.
+        // there are twelve semitones in an octave, so we divide by 12 to access them all.
+        // based on A 440.
+        // 440 * 2^(noteIndex/12)
+        double noteHz = (440 * Math.pow(2, ((double) noteIndex)/12));
+
+        Log.d(TAG, "playNote: " + noteHz + " " + noteIndex);
+
+        playTone(noteHz, duration);
+    }
     public static void playTone(double freqOfTone, double duration) {
         // Use a new tread as this can take a while
         final Thread thread = new Thread(new Runnable() {
@@ -21,7 +57,7 @@ public class SoundGenerator {
         });
         thread.start();
     }
-    public static void playSound(double freqOfTone, double duration) {
+    private static void playSound(double freqOfTone, double duration) {
         //double duration = 1000;                // seconds
         //   double freqOfTone = 1000;           // hz
         int sampleRate = 8000;              // a number

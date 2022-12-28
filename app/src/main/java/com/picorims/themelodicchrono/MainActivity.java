@@ -43,7 +43,7 @@ import com.picorims.themelodicchrono.models.Rules;
 import com.picorims.themelodicchrono.sound.SoundGenerator;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "App::MainActivity";
+    public static final String TAG = "MelodicChrono::MainActivity";
 
     //components
     private Button startChronoBtn;
@@ -206,7 +206,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startChrono();
-                SoundGenerator.playTone(440, 0.25);
+                SoundGenerator.playNote("C", 0.25);
+                SoundGenerator.playNote("E", 0.25);
+                SoundGenerator.playNote("G", 0.25);
             }
         });
 
