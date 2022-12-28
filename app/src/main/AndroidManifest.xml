@@ -11,6 +11,7 @@
         android:theme="@style/Theme.TheMelodicChrono">
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true">
             <!--Must be exported and contain these intents
             for the app to be able to be launched.-->

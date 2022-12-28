@@ -26,6 +26,7 @@ package com.picorims.themelodicchrono;
 
 import static com.picorims.themelodicchrono.models.Units.UNITS;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 
@@ -69,44 +70,57 @@ public class MainActivity extends AppCompatActivity {
     private String commandSyntax = "" +
             "how to read:\n" +
             "\n" +
-            "<> is mandatory\n" +
-            "[...='v'] is optional and takes v by default\n" +
-            "A | B means A or B\n" +
+            "- <> is mandatory\n" +
+            "- [...='v'] is optional\n" +
+            "  and takes v by default\n" +
+            "- A | B means A or B\n" +
             "\n" +
             "\n" +
-            "command syntax:\n" +
+            "command syntax (on one line!):\n" +
             "\n" +
-            "<play_mode> <timestamp> play <note_list> [note_play_mode='repeat']\n" +
+            "<play_mode>\n" +
+            "   <timestamp>\n" +
+            "   play <note_list>\n" +
+            "   [note_play_mode='repeat']\n" +
+            "\n" +
             "where:\n" +
             "- <play_mode> =\n" +
-            "            - 'at':      at specified moment\n" +
-            "            - 'every':   at every given frequency\n" +
+            "   - 'at':\n" +
+            "       * at specified moment\n" +
+            "   - 'every':\n" +
+            "       * at every given frequency\n" +
             "\n" +
             "- <timestamp> = [?h]:[?m]:[?s]:[?ds]\n" +
-            "            * (ex: '5s'; '1m'; '1h:30m'; etc.)\n" +
+            "   * (ex: '5s'; '1m'; '1h:30m'; etc.)\n" +
             "\n" +
             "- <note_list> = <note>[,<note>,...]\n" +
-            "            * (ex: 'C,Eb,G')\n" +
-            "            - <note> = A | B | C | D | E | F | G with eventually # or b\n" +
+            "   - <note> =\n" +
+            "       * note letter (ABCDEFG)\n" +
+            "         with eventually # or b\n" +
+            "   * (ex: 'C,Eb,G')\n" +
             "\n" +
             "- <note_play_mode> =\n" +
-            "            - 'scale':             plays 1, 2, 3, 1...\n" +
-            "            - 'arpeggio':          plays 1, 1+2, 1+2+3, 1...\n" +
-            "            - 'repeat' [max=1]:    plays all 1 times, 2 times, etc. up to [max],\n" +
-        "                                       then back to 1\n" +
-            "                        - <max>: integer\n" +
+            "   - 'scale':\n" +
+            "       * plays 1, 2, 3, 1...\n" +
+            "   - 'arpeggio':\n" +
+            "       * plays 1, 1+2, 1+2+3, 1...\n" +
+            "   - 'repeat' [max=1]:\n" +
+            "       * plays all 1, 2, n times,\n" +
+            "         up to [max], then back to 1\n" +
+            "   - [max]:\n" +
+            "       * integer\n" +
             "\n" +
             "\n" +
             "examples:\n" +
             "\n" +
-            "- every 5s play C,E,G arpeggio" +
-            "           - (C then CE then CEG then C...)\n" +
-            "- every 1m play C repeat 3" +
-            "           - (C then CC then CCC then C...)\n" +
-            "- every 1h play C,E,G repeat 2" +
-            "           - (CEG then CEGCEG then CEG...)\n" +
-            "- at 1m:30s play C" +
-            "           - (plays C once)\n";
+            "- every 5s play C,E,G arpeggio\n" +
+            "   * (C then CE then CEG then C...)\n" +
+            "- every 1m play C repeat 3\n" +
+            "   * (C then CC then CCC then C...)\n" +
+            "- every 1h play C,E,G repeat 2\n" +
+            "   * (CEG then CEGCEG then CEG...)\n" +
+            "- at 1m:30s play C\n" +
+            "   * (plays C once)\n";
     private String rulesCommands = "";
     private Rules rules = null;
 

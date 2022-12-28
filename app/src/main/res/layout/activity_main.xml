@@ -46,8 +46,14 @@ SOFTWARE.
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rules (scrollable) :"
+            android:text="Rules:"
             android:textSize="40sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="scrollable horizontally if needed."/>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -57,7 +63,7 @@ SOFTWARE.
                 android:id="@+id/command_syntax"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:fontFamily="monospace"/>
         </HorizontalScrollView>
 
