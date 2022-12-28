@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.picorims.themelodicchrono.models.Rules;
+import com.picorims.themelodicchrono.sound.SoundGenerator;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "App::MainActivity";
@@ -205,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startChrono();
+                SoundGenerator.playTone(440, 0.25);
             }
         });
 
