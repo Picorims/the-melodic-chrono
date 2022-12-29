@@ -37,7 +37,7 @@ public class SoundGenerator {
      * @param duration
      * @param activity activity for which we use the audio service
      */
-    public static void playNote(String note, double duration, Activity activity) {
+    public static void playNote(String note, double duration, long delay, Activity activity) {
         //find index of the note relative to A4 = 0
         int C4 = -9;
         int noteIndex = C4;
@@ -55,7 +55,7 @@ public class SoundGenerator {
 
         Log.d(TAG, "playNote: " + noteHz + " " + noteIndex);
 
-        playTone(noteHz, duration, activity);
+        playTone(noteHz, duration, delay, activity);
     }
 
     /**
@@ -64,14 +64,22 @@ public class SoundGenerator {
      * @param duration
      * @param activity activity for which we use the audio service
      */
-    public static void playTone(double freqOfTone, double duration, Activity activity) {
+    public static void playTone(double freqOfTone, double duration, long delay, Activity activity) {
         // Use a new tread as this can take a while
-        final Thread thread = new Thread(new Runnable() {
+        final Runnable noteRunnable = new Runnable() {
             public void run() {
-                playSound(freqOfTone, duration, activity);
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        playSound(freqOfTone, duration, activity);
+                    }
+                });
+                t.start();
             }
-        });
-        thread.start();
+        };
+
+        if (delay == 0) noteRunnable.run();
+        else new Handler().postDelayed(noteRunnable, delay);
     }
 
     /**

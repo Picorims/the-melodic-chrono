@@ -1,6 +1,7 @@
 package com.picorims.themelodicchrono.models;
 
 import android.util.Log;
+import android.util.Pair;
 
 import java.util.ArrayList;
 
@@ -15,12 +16,22 @@ public class Command {
         ARPEGGIO,
         REPEAT
     }
+    public static final long REPETITION_DELAY_MS = 250;
     private CommandTypes commandType;
     private long timestamp;
     private ArrayList<String> notes;
     private PlayModeTypes playMode;
     private int repeatModeMax;
-    private int cursor; // keep track of where we are for scale, arpeggio, repeat...
+    private int cursor; //position in the scale, arpeggio, number of repetitions, etc.
+    /**
+     * The schedule is a structure that stores all the notes that have to be played
+     * at a given time. It has a duration, stored in the last index. The schedule is
+     * looped on its duration, so if we go beyond that duration, we go back to the
+     * start of the schedule.
+     * It is generated at Command creation based on the provided rules and the
+     * delay constant.
+     */
+//    private ArrayList<Pair<Long,ArrayList<String>>> schedule;
 
     /**
      * Creates a new command based on the given parameters.
@@ -57,6 +68,49 @@ public class Command {
     }
 
     /**
+     * Generates the schedule based on the command rules and the delay constant value.
+     */
+//    private void buildSchedule() {
+//        if (playMode == PlayModeTypes.SCALE) {
+//            //SCALE
+//            for (int step = 0; step < notes.size(); step++) {
+//                long noteTimestamp = timestamp*(step+1);
+//                ArrayList<String> notesOfMilestone = new ArrayList<>();
+//                notesOfMilestone.add(notes.get(step));
+//                schedule.add(buildPair(noteTimestamp, notesOfMilestone));
+//            }
+//            //duration
+//            schedule.add(buildPair(timestamp * notes.size(), null));
+//
+//        } else if (playMode == PlayModeTypes.ARPEGGIO) {
+//            //ARPEGGIO
+//            for (int step = 0; step < notes.size(); step++) {
+//                //for all notes of the arpeggio of the step
+//                // (ex: C,D,E => first for has C; second for has C,D; etc.)
+//                for (int j = 0; j < step + 1; j++) {
+//                    long noteTimestamp = timestamp*(step+1) + j * REPETITION_DELAY_MS;
+//                    ArrayList<String> notesOfMilestone = new ArrayList<>();
+//                    notesOfMilestone.add(notes.get(j));
+//                    schedule.add(buildPair(noteTimestamp, notesOfMilestone));
+//                }
+//            }
+//            //duration
+//            schedule.add(buildPair(timestamp * notes.size() + , null));
+//
+//        }
+//    }
+
+    /**
+     * Shorthand for schedule pair construction
+     * @param a
+     * @param b
+     * @return
+     */
+//    private Pair<Long,ArrayList<String>> buildPair(Long a, ArrayList<String> b) {
+//        return new Pair<>(a, b);
+//    }
+
+    /**
      * Gives the notes that should be played within two given timestamps.
      * The function assumes we start from zero. In other words, the timestamps
      * should be based on when the chrono started, rather than being a UNIX timestamp.
@@ -64,12 +118,16 @@ public class Command {
      * @param timestampMax
      * @return
      */
-    public ArrayList<String> notesToPlayBetween(long timestampMin, long timestampMax) {
+    public ArrayList<Pair<String, Long>> notesToPlayBetween(long timestampMin, long timestampMax) {
+        ArrayList<Pair<String, Long>> notesToSend = null;
         if (commandType == CommandTypes.AT) {
             // AT
             if (timestamp >= timestampMin && timestamp < timestampMax) {
                 // there is no mode for at, we just play all the listed notes.
-                return (ArrayList<String>) notes.clone();
+                notesToSend = new ArrayList<>();
+                for (int i = 0; i < notes.size(); i++) {
+                    notesToSend.add(delayedNote(notes.get(i), 0l));
+                }
             }
         } else if (commandType == CommandTypes.EVERY) {
             // EVERY
@@ -83,11 +141,15 @@ public class Command {
             // That means 0 modulo timestamp is in the range.
             // In other words the moment to repeat the event again is now.
             if (minMod > maxMod) {
-                return (ArrayList<String>) getNotes();
+                notesToSend = getCurrentNotes();
             }
         }
         //nothing to send otherwise
-        return new ArrayList<>();
+        return notesToSend;
+    }
+
+    private Pair<String, Long> delayedNote(String note, Long delay) {
+        return new Pair<>(note, delay);
     }
 
     /**
@@ -95,22 +157,29 @@ public class Command {
      * It automatically increments the cursor as well!
      * @return
      */
-    private ArrayList<String> getNotes() {
-        ArrayList<String> notesToReturn = new ArrayList<>();
+    private ArrayList<Pair<String, Long>> getCurrentNotes() {
+        ArrayList<Pair<String, Long>> notesToReturn = new ArrayList<>();
         if (playMode == PlayModeTypes.SCALE) {
             //SCALE
-            notesToReturn.add(notes.get(cursor));
+            // add curent note
+            notesToReturn.add(delayedNote(notes.get(cursor), 0l));
             cursor = (cursor+1) % notes.size();
 
         } else if (playMode == PlayModeTypes.ARPEGGIO) {
             //ARPEGGIO
-            notesToReturn.addAll(notes.subList(0, cursor));
+            // add all notes up to current with delay
+            for (int i = 0; i < cursor+1; i++) {
+                notesToReturn.add(delayedNote(notes.get(i), i * REPETITION_DELAY_MS));
+            }
             cursor = (cursor+1) % notes.size();
 
         } else if (playMode == PlayModeTypes.REPEAT) {
             //REPEAT
+            //add all notes "cursor" times with delay
             for (int i = 0; i < cursor+1; i++) {
-                notesToReturn.addAll(notes);
+                for (int j = 0; j < notes.size(); j++) {
+                    notesToReturn.add(delayedNote(notes.get(j), i * REPETITION_DELAY_MS));
+                }
             }
             cursor = (cursor+1) % repeatModeMax;
 

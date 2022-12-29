@@ -35,6 +35,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
+    public static final double NOTE_DURATION = 0.5;
 
     //components
     private Button startChronoBtn;
@@ -198,10 +200,14 @@ public class MainActivity extends AppCompatActivity {
 
                     //play notes
                     if (rules != null) {
-                        ArrayList<String> notesToPlay = rules.getNotesToPlay(ellapsedThen, ellapsed);
-                        for (String note : notesToPlay) {
-                            SoundGenerator.playNote(note, 0.5, thisActivity);
+                        ArrayList<Pair<String, Long>> notesToPlay = rules.getNotesToPlay(ellapsedThen, ellapsed);
+                        for (int i = 0; i < notesToPlay.size(); i++) {
+                            Pair<String, Long> note = notesToPlay.get(i);
+                            String noteStr = note.first;
+                            long delay = note.second;
+                            SoundGenerator.playNote(noteStr, NOTE_DURATION, delay, thisActivity);
                         }
+                        if (notesToPlay.size() > 0) Log.d(TAG, "run: " + notesToPlay);
                     }
 
                     // end of loop updates

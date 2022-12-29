@@ -27,6 +27,7 @@ package com.picorims.themelodicchrono.models;
 import static com.picorims.themelodicchrono.models.Units.UNITS;
 
 import android.util.Log;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,10 +194,11 @@ public class Rules {
      * @param timestampMax
      * @return
      */
-    public ArrayList<String> getNotesToPlay(long timestampMin, long timestampMax) {
-        ArrayList<String> notesToPlay = new ArrayList<>();
+    public ArrayList<Pair<String, Long>> getNotesToPlay(long timestampMin, long timestampMax) {
+        ArrayList<Pair<String, Long>> notesToPlay = new ArrayList<>();
         for (Command c: commands) {
-            notesToPlay.addAll(c.notesToPlayBetween(timestampMin, timestampMax));
+            ArrayList<Pair<String, Long>> notesOfCommand = c.notesToPlayBetween(timestampMin, timestampMax);
+            if (notesOfCommand != null) notesToPlay.addAll(notesOfCommand);
         }
         return notesToPlay;
     }
