@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
         resetChrono();
 
         // define chrono loop
+        Activity thisActivity = this;
         chronoTask = new Runnable() {
             @Override
             public void run() {
@@ -198,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     if (rules != null) {
                         ArrayList<String> notesToPlay = rules.getNotesToPlay(ellapsedThen, ellapsed);
                         for (String note : notesToPlay) {
-                            SoundGenerator.playNote(note, 0.5);
+                            SoundGenerator.playNote(note, 0.5, thisActivity);
                         }
                     }
 
@@ -258,6 +260,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopChrono();
     }
 
     /**

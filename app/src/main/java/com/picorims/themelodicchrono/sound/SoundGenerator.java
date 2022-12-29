@@ -1,5 +1,8 @@
 package com.picorims.themelodicchrono.sound;
 
+import android.app.Activity;
+import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -28,7 +31,13 @@ public class SoundGenerator {
         NOTES.put("B", 11);
     }
 
-    public static void playNote(String note, double duration) {
+    /**
+     * Play the given note for the given duration
+     * @param note
+     * @param duration
+     * @param activity activity for which we use the audio service
+     */
+    public static void playNote(String note, double duration, Activity activity) {
         //find index of the note relative to A4 = 0
         int C4 = -9;
         int noteIndex = C4;
@@ -46,18 +55,32 @@ public class SoundGenerator {
 
         Log.d(TAG, "playNote: " + noteHz + " " + noteIndex);
 
-        playTone(noteHz, duration);
+        playTone(noteHz, duration, activity);
     }
-    public static void playTone(double freqOfTone, double duration) {
+
+    /**
+     * Play the given frequency for the given duration in a separate thread
+     * @param freqOfTone
+     * @param duration
+     * @param activity activity for which we use the audio service
+     */
+    public static void playTone(double freqOfTone, double duration, Activity activity) {
         // Use a new tread as this can take a while
         final Thread thread = new Thread(new Runnable() {
             public void run() {
-                playSound(freqOfTone, duration);
+                playSound(freqOfTone, duration, activity);
             }
         });
         thread.start();
     }
-    private static void playSound(double freqOfTone, double duration) {
+
+    /**
+     * Plays the given frequency for the given duration
+     * @param freqOfTone
+     * @param duration
+     * @param activity activity for which we use the audio service
+     */
+    private static void playSound(double freqOfTone, double duration, Activity activity) {
         //double duration = 1000;                // seconds
         //   double freqOfTone = 1000;           // hz
         int sampleRate = 8000;              // a number
@@ -73,8 +96,6 @@ public class SoundGenerator {
             sample[i] = Math.sin(freqOfTone * 2 * Math.PI * i / (sampleRate));
         }
 
-        // convert to 16 bit pcm sound array
-        // assumes the sample buffer is normalized.
         // convert to 16 bit pcm sound array
         // assumes the sample buffer is normalised.
         int idx = 0;
@@ -113,10 +134,35 @@ public class SoundGenerator {
         AudioTrack audioTrack = null;                                   // Get audio track
         try {
             int bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-            audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                    sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT, bufferSize,
-                    AudioTrack.MODE_STREAM);
+
+            //create audio
+            AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+
+            AudioFormat audioFormat = new AudioFormat.Builder()
+                    .setSampleRate(sampleRate)
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                    .build();
+
+            // initialize with new constructor
+            audioTrack = new AudioTrack(audioAttributes,
+                    audioFormat,
+                    bufferSize,
+                    AudioTrack.MODE_STREAM,
+                    0);
+
+            //DEPRECATED =====
+//            audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+//                    sampleRate, AudioFormat.CHANNEL_OUT_MONO,
+//                    AudioFormat.ENCODING_PCM_16BIT, bufferSize,
+//                    AudioTrack.MODE_STREAM);
+            // ===============
+            //play audio
             audioTrack.setVolume(0.5f);
             audioTrack.play();                                          // Play the track
             audioTrack.write(generatedSnd, 0, generatedSnd.length);     // Load the track

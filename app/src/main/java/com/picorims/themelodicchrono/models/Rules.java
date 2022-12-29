@@ -111,8 +111,8 @@ public class Rules {
             notes.addAll(Arrays.asList(noteList.split(",")));
 
             //get repeat rule if exist
-            String notePlayMode = (args.size() > 5)? args.get(4) : "";
-            String notePlayModeMax = (args.size() > 6)? args.get(5) : "";
+            String notePlayMode = (args.size() > 4)? args.get(4) : "";
+            String notePlayModeMax = (args.size() > 5)? args.get(5) : "";
 
             //add command object
 
