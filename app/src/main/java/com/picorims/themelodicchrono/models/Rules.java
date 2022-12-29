@@ -26,6 +26,9 @@ package com.picorims.themelodicchrono.models;
 
 import static com.picorims.themelodicchrono.models.Units.UNITS;
 
+import android.util.Log;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,14 +37,17 @@ import java.util.List;
  * notes play.
  */
 public class Rules {
+    public static final String TAG = "Rules";
     private boolean successfullyParsed;
     private String errorMessage = null;
+    private ArrayList<Command> commands;
 
-    public Rules(String commands) {
+    public Rules(String commandsStr) {
         try {
-            loadRules(commands);
+            commands = new ArrayList<>();
+            loadRules(commandsStr);
             successfullyParsed = true;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalRulesException e) {
             errorMessage = e.getMessage();
             successfullyParsed = false;
         }
@@ -68,51 +74,82 @@ public class Rules {
     /**
      * Try to load rules by parsing the command and loading its data. If a syntax error is met,
      * an exception is thrown.
-     * @throws IllegalArgumentException
-     * @param rules the list of commands separated by line breaks.
+     * @throws IllegalRulesException
+     * @param commandsStr the list of commands separated by line breaks.
      */
-    private void loadRules(String rules) {
+    private void loadRules(String commandsStr) throws IllegalRulesException {
         //get commands
         String validateCommandRegex = "^(at|every) ([0-9]{1,2}([hms]|ds)[:]?){0,4} play ([A-G][#b]?[,]?)+( (scale|arpeggio|repeat( [0-9]+)?))?$";
         String validateTimestamp = "^.*[^:]$";
         String validateNoteList = "^.*[^,]$";
-        List<String> commands = Arrays.asList(rules.split("\n"));
+        List<String> commandsList = Arrays.asList(commandsStr.split("\n"));
 
-        //TODO build data storage object (classes?) to have something queryable in the chrono loop
-
-        for (int i = 0; i < commands.size(); i++) {
-            String cmd = commands.get(i);
-            if (!cmd.matches(validateCommandRegex)) throw new IllegalArgumentException("Invalid command syntax for command " + i + ":\n" + cmd);
+        for (int i = 0; i < commandsList.size(); i++) {
+            String cmd = commandsList.get(i);
+            if (!cmd.matches(validateCommandRegex)) {
+                throw new IllegalRulesException("Invalid command syntax for command " + i + ":\n" + cmd);
+            }
             //get arguments of command
             List<String> args = Arrays.asList(cmd.split(" "));
 
             //parse command
-            String playMode = args.get(0);
+            String cmdName = args.get(0).trim();
 
-            //get timestamp as unix
+            //get timestamp in milliseconds
             String timestamp = args.get(1);
-            if (!timestamp.matches(validateTimestamp)) throw new IllegalArgumentException("Invalid timestamp at line " + i + ":" + timestamp);
-            long msValue = timestampToUnix(timestamp);
+            if (!timestamp.matches(validateTimestamp)) {
+                throw new IllegalRulesException("Invalid timestamp at line " + i + ":" + timestamp);
+            }
+            long msTimestamp = timestampToUnix(timestamp);
 
             //get note list
             String noteList = args.get(3);
-            if (!noteList.matches(validateNoteList)) throw new IllegalArgumentException("Invalid note list at line " + i + ":" + noteList);
-            // TODO split note list
+            if (!noteList.matches(validateNoteList)) {
+                throw new IllegalRulesException("Invalid note list at line " + i + ":" + noteList);
+            }
+            ArrayList<String> notes = new ArrayList<>();
+            notes.addAll(Arrays.asList(noteList.split(",")));
 
             //get repeat rule if exist
             String notePlayMode = (args.size() > 5)? args.get(4) : "";
             String notePlayModeMax = (args.size() > 6)? args.get(5) : "";
 
-            //TODO do stuff with it
+            //add command object
+
+            //get type
+            Command.CommandTypes cmdType = null;
+            if (cmdName.equals("at")) cmdType = Command.CommandTypes.AT;
+            else if (cmdName.equals("every")) cmdType = Command.CommandTypes.EVERY;
+
+            //get note play mode
+            Command.PlayModeTypes notePlayModeType = null;
+            if (notePlayMode.equals("") || notePlayMode.equals("repeat")) notePlayModeType = Command.PlayModeTypes.REPEAT;
+            else if (notePlayMode.equals("scale")) notePlayModeType = Command.PlayModeTypes.SCALE;
+            else if (notePlayMode.equals("arpeggio")) notePlayModeType = Command.PlayModeTypes.ARPEGGIO;
+
+            int maxRepeats = -1;
+            if (notePlayModeType == Command.PlayModeTypes.REPEAT && !notePlayModeMax.equals("")) {
+                maxRepeats = Integer.parseInt(notePlayModeMax);
+            }
+
+            //add command
+            if (cmdType == Command.CommandTypes.AT) {
+                commands.add(new Command(cmdType, msTimestamp, notes));
+            } else if (cmdType == Command.CommandTypes.EVERY) {
+                commands.add(new Command(cmdType, msTimestamp, notes, notePlayModeType, maxRepeats));
+            } else {
+                throw new IllegalRulesException("Unknown command: '" + cmdName + "'");
+            }
         }
     }
 
     /**
      * Converts a string timestamp into its value in milliseconds (for use with unix timestamps).
      * @param timestamp
+     * @throws IllegalRulesException
      * @return
      */
-    private long timestampToUnix(String timestamp) {
+    private long timestampToUnix(String timestamp) throws IllegalRulesException {
         List<String> durations = Arrays.asList(timestamp.split(":"));
         long unix = 0;
 
@@ -130,8 +167,8 @@ public class Rules {
                 }
             }
             //if not, it isn't valid
-            if (!found) throw new IllegalArgumentException(duration + " uses an invalid unit " +
-                    "in timestamp: " + timestamp);
+            if (!found) throw new IllegalRulesException(duration + " uses an invalid unit " +
+                    "in timestamp: '" + timestamp + "'");
         }
 
         return unix;
@@ -144,7 +181,23 @@ public class Rules {
      * @return the validity of the string
      */
     private boolean matchesUnit(String str, String unit) {
-        String unitRegex = "^.*{0}$";
-        return str.matches(unitRegex.replace("{0}", unit));
+        String unitRegex = "^[0-9]+[##UNIT##]$";
+        return str.matches(unitRegex.replace("[##UNIT##]", unit));
+    }
+
+    /**
+     * Returns the list of notes to play between two given timestamps.
+     * It is assumed that the reference for the timestamps is zero (the start of the chrono),
+     * and NOT the unix start moment.
+     * @param timestampMin
+     * @param timestampMax
+     * @return
+     */
+    public ArrayList<String> getNotesToPlay(long timestampMin, long timestampMax) {
+        ArrayList<String> notesToPlay = new ArrayList<>();
+        for (Command c: commands) {
+            notesToPlay.addAll(c.notesToPlayBetween(timestampMin, timestampMax));
+        }
+        return notesToPlay;
     }
 }

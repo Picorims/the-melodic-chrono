@@ -15,7 +15,7 @@ import java.util.HashMap;
  * - https://stackoverflow.com/a/23399026
  */
 public class SoundGenerator {
-    public static final String TAG = "MelodicChrono::SoundGenerator";
+    public static final String TAG = "SoundGenerator";
     private static final HashMap<String, Integer> NOTES = new HashMap<>();
 
     static {
@@ -34,9 +34,9 @@ public class SoundGenerator {
         int noteIndex = C4;
         String baseNote = note.substring(0,1);
         String modifier = (note.length() == 2)? note.substring(1,2) : "";
-        if (modifier == "#") noteIndex++;
-        if (modifier == "b") noteIndex--;
-        noteIndex += NOTES.get(note);
+        if (modifier.equals("#")) noteIndex++;
+        if (modifier.equals("b")) noteIndex--;
+        noteIndex += NOTES.get(baseNote);
 
         // *2 = +1 octave so 12, 24, 36... are octaves.
         // there are twelve semitones in an octave, so we divide by 12 to access them all.

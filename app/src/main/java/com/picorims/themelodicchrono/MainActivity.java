@@ -33,6 +33,7 @@ import androidx.core.text.HtmlCompat;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,8 +43,10 @@ import android.widget.Toast;
 import com.picorims.themelodicchrono.models.Rules;
 import com.picorims.themelodicchrono.sound.SoundGenerator;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "MelodicChrono::MainActivity";
+    public static final String TAG = "MainActivity";
 
     //components
     private Button startChronoBtn;
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView errorMsg;
 
     // chrono
-    public static final long CHRONO_MS_FREQUENCY = 100; //0.1s
+    public static final long CHRONO_MS_FREQUENCY = 1000/60; //0.1s
     private Handler handler;
     private Boolean chronoStopped = true;
     private Runnable chronoTask;
@@ -105,11 +108,12 @@ public class MainActivity extends AppCompatActivity {
             "       * plays 1, 2, 3, 1...\n" +
             "   - 'arpeggio':\n" +
             "       * plays 1, 1+2, 1+2+3, 1...\n" +
-            "   - 'repeat' [max=1]:\n" +
+            "   - 'repeat' [max_repeats=1]:\n" +
             "       * plays all 1, 2, n times,\n" +
-            "         up to [max], then back to 1\n" +
-            "   - [max]:\n" +
+            "         up to [max_repeats], then back to 1\n" +
+            "   - [max_repeats]:\n" +
             "       * integer\n" +
+            "   * NOTE: it has no effect on AT command!\n" +
             "\n" +
             "\n" +
             "examples:\n" +
@@ -175,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
                     //durations
                     long ellapsed = unixNow - unixStart;
+                    long ellapsedThen = unixThen - unixStart;
                     long loopDuration = unixNow - unixThen;
 
                     //display
@@ -188,6 +193,14 @@ public class MainActivity extends AppCompatActivity {
                             + ":" + strWithAZero(diffSeconds)
                             + "." + diffDeciseconds;
                     chronoDisplayText.setText(String.valueOf(time));
+
+                    //play notes
+                    if (rules != null) {
+                        ArrayList<String> notesToPlay = rules.getNotesToPlay(ellapsedThen, ellapsed);
+                        for (String note : notesToPlay) {
+                            SoundGenerator.playNote(note, 0.5);
+                        }
+                    }
 
                     // end of loop updates
                     unixThen = unixNow;
@@ -206,9 +219,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startChrono();
-                SoundGenerator.playNote("C", 0.25);
-                SoundGenerator.playNote("E", 0.25);
-                SoundGenerator.playNote("G", 0.25);
             }
         });
 
@@ -239,12 +249,12 @@ public class MainActivity extends AppCompatActivity {
                     //success
                     rules = newRules;
                     errorMsg.setText("");
-                    showToast("Couldn't load rules.");
+                    showToast("Loaded rules.");
                 } else {
                     //error
                     String error = newRules.getErrorMessage();
                     errorMsg.setText(error);
-                    showToast("Loaded rules.");
+                    showToast("Couldn't load rules.");
                 }
             }
         });
