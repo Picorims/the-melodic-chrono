@@ -23,15 +23,6 @@ public class Command {
     private PlayModeTypes playMode;
     private int repeatModeMax;
     private int cursor; //position in the scale, arpeggio, number of repetitions, etc.
-    /**
-     * The schedule is a structure that stores all the notes that have to be played
-     * at a given time. It has a duration, stored in the last index. The schedule is
-     * looped on its duration, so if we go beyond that duration, we go back to the
-     * start of the schedule.
-     * It is generated at Command creation based on the provided rules and the
-     * delay constant.
-     */
-//    private ArrayList<Pair<Long,ArrayList<String>>> schedule;
 
     /**
      * Creates a new command based on the given parameters.
@@ -66,49 +57,6 @@ public class Command {
     public Command(CommandTypes commandType, long timestamp, ArrayList notes) {
         this(commandType, timestamp, notes, PlayModeTypes.SCALE, -1);
     }
-
-    /**
-     * Generates the schedule based on the command rules and the delay constant value.
-     */
-//    private void buildSchedule() {
-//        if (playMode == PlayModeTypes.SCALE) {
-//            //SCALE
-//            for (int step = 0; step < notes.size(); step++) {
-//                long noteTimestamp = timestamp*(step+1);
-//                ArrayList<String> notesOfMilestone = new ArrayList<>();
-//                notesOfMilestone.add(notes.get(step));
-//                schedule.add(buildPair(noteTimestamp, notesOfMilestone));
-//            }
-//            //duration
-//            schedule.add(buildPair(timestamp * notes.size(), null));
-//
-//        } else if (playMode == PlayModeTypes.ARPEGGIO) {
-//            //ARPEGGIO
-//            for (int step = 0; step < notes.size(); step++) {
-//                //for all notes of the arpeggio of the step
-//                // (ex: C,D,E => first for has C; second for has C,D; etc.)
-//                for (int j = 0; j < step + 1; j++) {
-//                    long noteTimestamp = timestamp*(step+1) + j * REPETITION_DELAY_MS;
-//                    ArrayList<String> notesOfMilestone = new ArrayList<>();
-//                    notesOfMilestone.add(notes.get(j));
-//                    schedule.add(buildPair(noteTimestamp, notesOfMilestone));
-//                }
-//            }
-//            //duration
-//            schedule.add(buildPair(timestamp * notes.size() + , null));
-//
-//        }
-//    }
-
-    /**
-     * Shorthand for schedule pair construction
-     * @param a
-     * @param b
-     * @return
-     */
-//    private Pair<Long,ArrayList<String>> buildPair(Long a, ArrayList<String> b) {
-//        return new Pair<>(a, b);
-//    }
 
     /**
      * Gives the notes that should be played within two given timestamps.
