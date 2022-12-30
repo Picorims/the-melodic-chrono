@@ -145,7 +145,14 @@ SOFTWARE.
             android:layout_height="wrap_content"
             android:textSize="40sp"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Paragraph"
+            android:text="Copyright (c) 2022 Picorims - MIT License"/>
 
     </LinearLayout>
 
