@@ -3,4 +3,10 @@
     <style name="SpacedButton">
         <item name="android:layout_margin">8dp</item>
     </style>
+    <style name="Title">
+        <item name="android:textSize">32sp</item>
+    </style>
+    <style name="Paragraph">
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>

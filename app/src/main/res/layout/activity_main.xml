@@ -40,20 +40,20 @@ SOFTWARE.
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="I know that the interface, and the code, and the UI is ugly, but this is supposed to be a very quick side project for personal use, not a month(s) long project. So, deal with it I guess?"/>
+            android:text="I know that the interface, and the code, and the UI is ugly, but this is supposed to be a very quick side project for personal use, not a month(s) long project. So, deal with it I guess?"
+            style="@style/Paragraph"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Rules:"
-            android:textSize="40sp"/>
+            style="@style/Title"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="scrollable horizontally if needed."/>
+            android:text="scrollable horizontally if needed."
+            style="@style/Paragraph"/>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -71,7 +71,7 @@ SOFTWARE.
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Write here :"
-            android:textSize="40sp"/>
+            style="@style/Title"/>
 
         <EditText
             android:id="@+id/rules_text"
@@ -88,17 +88,26 @@ SOFTWARE.
             android:textSize="16sp"
             android:textColor="@color/red"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delay between notes (in milliseconds) :"
+            style="@style/Paragraph"/>
+
+        <EditText
+            android:id="@+id/delay_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="start|top"
+            android:inputType="number" />
+
         <Button
             android:id="@+id/apply_rules"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Apply rules"/>
 
-        <LinearLayout
-            android:id="@+id/rules_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"/>
 
         <LinearLayout
             android:layout_width="match_parent"

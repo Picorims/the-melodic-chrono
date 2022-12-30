@@ -16,6 +16,7 @@ import java.util.HashMap;
  * Source:
  * - https://stackoverflow.com/questions/2413426/playing-an-arbitrary-tone-with-android
  * - https://stackoverflow.com/a/23399026
+ * - Tweaked using multiple sources of the links above and personal additions
  */
 public class SoundGenerator {
     public static final String TAG = "SoundGenerator";

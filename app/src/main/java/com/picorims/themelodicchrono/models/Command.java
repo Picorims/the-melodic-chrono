@@ -1,3 +1,27 @@
+/*
+MIT License
+
+Copyright (c) 2022 Picorims
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 package com.picorims.themelodicchrono.models;
 
 import android.util.Log;
@@ -16,7 +40,7 @@ public class Command {
         ARPEGGIO,
         REPEAT
     }
-    public static final long REPETITION_DELAY_MS = 250;
+    private Rules rules;
     private CommandTypes commandType;
     private long timestamp;
     private ArrayList<String> notes;
@@ -34,9 +58,10 @@ public class Command {
      *                      It is set to -1 if not in repeat mode.
      *                      If in REPEAT mode and equals to -1, it defaults to 1.
      */
-    public Command(CommandTypes commandType, long timestamp, ArrayList notes, PlayModeTypes playMode, int repeatModeMax) {
+    public Command(Rules rules, CommandTypes commandType, long timestamp, ArrayList notes, PlayModeTypes playMode, int repeatModeMax) {
         if (commandType == null) throw new IllegalArgumentException("the command type must be specified");
         if (playMode == null) throw new IllegalArgumentException("the play mode type must be specified");
+        this.rules = rules;
         this.commandType = commandType;
         this.timestamp = timestamp;
         this.notes = notes;
@@ -54,8 +79,8 @@ public class Command {
      * @param timestamp
      * @param notes
      */
-    public Command(CommandTypes commandType, long timestamp, ArrayList notes) {
-        this(commandType, timestamp, notes, PlayModeTypes.SCALE, -1);
+    public Command(Rules rules, CommandTypes commandType, long timestamp, ArrayList notes) {
+        this(rules, commandType, timestamp, notes, PlayModeTypes.REPEAT, 1);
     }
 
     /**
@@ -117,7 +142,7 @@ public class Command {
             //ARPEGGIO
             // add all notes up to current with delay
             for (int i = 0; i < cursor+1; i++) {
-                notesToReturn.add(delayedNote(notes.get(i), i * REPETITION_DELAY_MS));
+                notesToReturn.add(delayedNote(notes.get(i), i * rules.getNotesDelayMs()));
             }
             cursor = (cursor+1) % notes.size();
 
@@ -126,7 +151,7 @@ public class Command {
             //add all notes "cursor" times with delay
             for (int i = 0; i < cursor+1; i++) {
                 for (int j = 0; j < notes.size(); j++) {
-                    notesToReturn.add(delayedNote(notes.get(j), i * REPETITION_DELAY_MS));
+                    notesToReturn.add(delayedNote(notes.get(j), i * rules.getNotesDelayMs()));
                 }
             }
             cursor = (cursor+1) % repeatModeMax;

@@ -42,17 +42,41 @@ public class Rules {
     private boolean successfullyParsed;
     private String errorMessage = null;
     private ArrayList<Command> commands;
+    private long notesDelayMs;
 
-    public Rules(String commandsStr) {
+    /**
+     * Build the commands from the provided list of commands as a string.
+     * The success of building is stored in isSuccessfullyParsed().
+     * If it fails, the error is available using getErrorMessage().
+     * @param commandsStr
+     * @param notesDelayMs
+     */
+    public Rules(String commandsStr, long notesDelayMs) {
         try {
             commands = new ArrayList<>();
             loadRules(commandsStr);
             successfullyParsed = true;
+            this.notesDelayMs = notesDelayMs;
         } catch (IllegalRulesException e) {
             errorMessage = e.getMessage();
             successfullyParsed = false;
         }
+    }
 
+    /**
+     * delay between notes when multiple notes have to be played at a time (arpeggio, repeat, etc.)
+     * @return
+     */
+    public long getNotesDelayMs() {
+        return notesDelayMs;
+    }
+
+    /**
+     * delay between notes when multiple notes have to be played at a time (arpeggio, repeat, etc.)
+     * @param notesDelayMs
+     */
+    public void setNotesDelayMs(long notesDelayMs) {
+        this.notesDelayMs = notesDelayMs;
     }
 
     /**
@@ -135,9 +159,9 @@ public class Rules {
 
             //add command
             if (cmdType == Command.CommandTypes.AT) {
-                commands.add(new Command(cmdType, msTimestamp, notes));
+                commands.add(new Command(this, cmdType, msTimestamp, notes));
             } else if (cmdType == Command.CommandTypes.EVERY) {
-                commands.add(new Command(cmdType, msTimestamp, notes, notePlayModeType, maxRepeats));
+                commands.add(new Command(this, cmdType, msTimestamp, notes, notePlayModeType, maxRepeats));
             } else {
                 throw new IllegalRulesException("Unknown command: '" + cmdName + "'");
             }

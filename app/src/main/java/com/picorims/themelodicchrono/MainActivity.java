@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private Button applyRules;
     private TextView errorMsg;
 
+    private EditText delayInput;
+
     // chrono
     public static final long CHRONO_MS_FREQUENCY = 1000/60; //0.1s
     private Handler handler;
@@ -149,9 +151,13 @@ public class MainActivity extends AppCompatActivity {
         textRules = findViewById(R.id.rules_text);
         applyRules = findViewById(R.id.apply_rules);
         errorMsg = findViewById(R.id.error_message);
+        delayInput = findViewById(R.id.delay_input);
 
         // write rules
         cmdSyntax.setText(commandSyntax);
+
+        // init delay
+        delayInput.setText("250");
 
         // init chrono
         resetChrono();
@@ -252,7 +258,8 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Cleared rules.");
             } else {
                 //load
-                Rules newRules = new Rules(commands);
+                long notesDelayMs = Long.parseLong(delayInput.getText().toString());
+                Rules newRules = new Rules(commands, notesDelayMs);
                 if (newRules.isSuccessfullyParsed()) {
                     //success
                     rules = newRules;
