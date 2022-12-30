@@ -247,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 resetChrono();
+                if (rules != null) rules.reset();
             }
         });
 

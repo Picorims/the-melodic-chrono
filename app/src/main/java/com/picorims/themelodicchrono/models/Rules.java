@@ -226,4 +226,13 @@ public class Rules {
         }
         return notesToPlay;
     }
+
+    /**
+     * Reset all commands to their original state
+     */
+    public void reset() {
+        for (Command c : commands) {
+            c.reset();
+        }
+    }
 }

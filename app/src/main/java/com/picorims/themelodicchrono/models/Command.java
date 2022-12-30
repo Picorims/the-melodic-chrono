@@ -159,4 +159,11 @@ public class Command {
         }
         return notesToReturn;
     }
+
+    /**
+     * Resets the command to its original state (resets the cursor position).
+     */
+    public void reset() {
+        cursor = 0;
+    }
 }
